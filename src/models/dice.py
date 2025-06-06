@@ -19,8 +19,12 @@ class Number(Enum):
 
 
 class Dice:
+    def __init__(self, color=Color.RED, number=Number.ONE):
+        self.color = color
+        self.number = number
     def shake(self):
-        return choice(list(Color)), choice(list(Number))
+        self.color = choice(list(Color))
+        self.number = choice(list(Number))
     
     
 class Dices:
@@ -28,15 +32,15 @@ class Dices:
         self.dices = [Dice() for i in range(6)]
     
     def shake(self):
-        return [dice.shake() for dice in self.dices]
+        for dice in self.dices:
+            dice.shake()
     
     
     def show(self, screen):
         for i, dice in enumerate(self.dices):
-            color, number = dice.shake()
             surface = pygame.Surface((50, 50))
-            surface.fill(color.value)
+            surface.fill(dice.color.value)
             font = pygame.font.Font(None, 36)
-            text = font.render(str(number.value), True, (255, 255, 255))
+            text = font.render(str(dice.number.value), True, (255, 255, 255))
             surface.blit(text, (25-text.get_width()/2, 25-text.get_height()/2))
             screen.blit(surface, (10+i*60, 10))

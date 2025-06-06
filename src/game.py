@@ -1,6 +1,7 @@
 import pygame
 import config
 import ui
+import src.models as models
 
 class Game:
     def __init__(self):
@@ -17,6 +18,7 @@ class Game:
                     running = False
             
             ui.Background.update(self.screen)
+            models.Dices().show(self.screen)
             
             pygame.display.flip()
                     
