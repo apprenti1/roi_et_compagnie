@@ -1,0 +1,41 @@
+[
+  {
+    "nom": "Ville",
+    "couleur": "Jaune",
+    "habitants_associes": ["Bourgeois vaniteux", "Elfe arrogant"],
+    "points_base": 2,
+    "description": "Donne 2 points par habitant jaune dans votre royaume."
+  },
+  {
+    "nom": "Mine",
+    "couleur": "Marron",
+    "habitants_associes": ["Nain grincheux"],
+    "points_base": 3,
+    "description": "Donne 3 points par Nain grincheux dans votre royaume."
+  },
+  {
+    "nom": "Atelier",
+    "couleur": "Bleu",
+    "habitants_associes": ["Gnome toqué"],
+    "points_base": 3,
+    "description": "Donne 3 points par Gnome toqué dans votre royaume."
+  },
+  {
+    "nom": "Village des Orcs",
+    "couleur": "Vert",
+    "habitants_associes": ["Orc malpoli"],
+    "points_base": 3,
+    "description": "Donne 3 points par Orc malpoli dans votre royaume."
+  },
+  {
+    "nom": "Forêt enchantée",
+    "couleur": "Violet",
+    "habitants_associes": [
+      "Champikobold",
+      "Apprenti sorcier talentueux",
+      "Hypnotiseur"
+    ],
+    "points_base": 1,
+    "description": "Donne 1 point par habitant violet dans votre royaume (cumulatif avec d'autres lieux violets)."
+  }
+]

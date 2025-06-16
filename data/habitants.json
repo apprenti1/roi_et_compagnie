@@ -1,0 +1,83 @@
+[
+    {
+        "nom": "Bourgeois vaniteux",
+        "texture": "prince",
+        "lieu": "Ville (jaune)",
+        "id_lieu": 0,
+        "condition": "6 dés tous pairs ou tous impairs",
+        "code_condition": "",
+        "texture_conditions": "",
+        "points": [2, 4],
+        "effet_special": "Aucun"
+    },
+    {
+        "nom": "Elfe arrogant",
+        "lieu": "Ville (jaune)",
+        "id_lieu": 0,
+        "condition": "Suite de chiffres consécutifs (ex: 1-2-3-4-5)",
+        "code_condition": "",
+        "texture_conditions": "",
+        "points": [3, 5],
+        "effet_special": "Prochain tour : 4 lancers au lieu de 3"
+    },
+    {
+        "nom": "Nain grincheux",
+        "lieu": "Mine (marron)",
+        "id_lieu": 1,
+        "condition": "Plusieurs dés avec la même valeur (ex: trois 4)",
+        "code_condition": "",
+        "texture_conditions": "",
+        "points": [2, 4],
+        "effet_special": "Aucun"
+    },
+    {
+        "nom": "Gnome toqué",
+        "lieu": "Atelier (bleu)",
+        "id_lieu": 2,
+        "condition": "Nombre spécifique de dés d’une couleur (ex: 4 bleus)",
+        "code_condition": "",
+        "texture_conditions": "",
+        "points": [2, 4],
+        "effet_special": "Aucun"
+    },
+    {
+        "nom": "Orc malpoli",
+        "lieu": "Village des Orcs (vert)",
+        "id_lieu": 3,
+        "condition": "Combinaison de valeurs spécifiques (ex: deux 2 et deux 5)",
+        "code_condition": "",
+        "texture_conditions": "",
+        "points": [2, 4],
+        "effet_special": "Aucun"
+    },
+    {
+        "nom": "Champikobold",
+        "lieu": "Forêt enchantée (violet)",
+        "id_lieu": 4,
+        "condition": "Nombre spécifique de dés d’une même couleur (ex: 5 verts)",
+        "code_condition": "",
+        "texture_conditions": "",
+        "points": [2, 4],
+        "effet_special": "Aucun"
+    },
+    {
+        "nom": "Apprenti sorcier talentueux",
+        "lieu": "Forêt enchantée (violet)",
+        "id_lieu": 4,
+        "condition": "Combinaison de couleurs spécifiques (ex: 2 verts, 2 rouges, 2 bleus)",
+        "code_condition": "",
+        "texture_conditions": "",
+        "points": [3, 5],
+        "effet_special": "Jouer immédiatement un autre tour"
+    },
+    {
+        "nom": "Hypnotiseur",
+        "lieu": "Forêt enchantée (violet)",
+        "id_lieu": 4,
+        "condition": "Somme des dés inférieure ou égale à 12",
+        "code_condition": "",
+        "texture_conditions": "",
+        "points": [2, 4],
+        "effet_special": "Permet de prendre aussi la carte d’habitant à droite"
+    }
+]
