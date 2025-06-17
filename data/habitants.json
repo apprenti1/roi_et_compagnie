@@ -5,7 +5,11 @@
         "lieu": "Ville (jaune)",
         "id_lieu": 0,
         "condition": "6 dés tous pairs ou tous impairs",
-        "code_condition": "",
+        "code_condition": 
+        [
+            "all(dice % 2 == 0 for dice in dices)",
+            "all(dice % 2 == 1 for dice in dices)"
+        ],
         "texture_conditions": "",
         "points": [2, 4],
         "effet_special": "Aucun"
@@ -15,7 +19,13 @@
         "lieu": "Ville (jaune)",
         "id_lieu": 0,
         "condition": "Suite de chiffres consécutifs (ex: 1-2-3-4-5)",
-        "code_condition": "",
+        "code_condition": 
+        [
+            "sorted(dices) == list(range(1, 4))",
+            "sorted(dices) == list(range(3, 6))",
+            "sorted(dices) == list(range(2, 5))",
+            "sorted(dices) == list(range(1, 6))"
+        ],
         "texture_conditions": "",
         "points": [3, 5],
         "effet_special": "Prochain tour : 4 lancers au lieu de 3"
@@ -25,7 +35,14 @@
         "lieu": "Mine (marron)",
         "id_lieu": 1,
         "condition": "Plusieurs dés avec la même valeur (ex: trois 4)",
-        "code_condition": "",
+        "code_condition": 
+        [
+            "dices.count(dices[5]) == 3",
+            "dices.count(dices[1]) == 3",
+            "dices.count(dices[2]) == 4",
+            "dices.count(dices[3]) == 3",
+            "dices.count(dices[4]) == 4"
+        ],
         "texture_conditions": "",
         "points": [2, 4],
         "effet_special": "Aucun"
@@ -35,7 +52,10 @@
         "lieu": "Atelier (bleu)",
         "id_lieu": 2,
         "condition": "Nombre spécifique de dés d’une couleur (ex: 4 bleus)",
-        "code_condition": "",
+        "code_condition": 
+        [
+            ""
+        ],
         "texture_conditions": "",
         "points": [2, 4],
         "effet_special": "Aucun"
@@ -45,7 +65,12 @@
         "lieu": "Village des Orcs (vert)",
         "id_lieu": 3,
         "condition": "Combinaison de valeurs spécifiques (ex: deux 2 et deux 5)",
-        "code_condition": "",
+        "code_condition": 
+        [
+            "dices.count(2) == 2 and dices.count(5) == 2",
+            "dices.count(3) == 2 and dices.count(4) == 3",
+            "dices.count(1) == 3 and dices.count(6) == 2"
+        ],
         "texture_conditions": "",
         "points": [2, 4],
         "effet_special": "Aucun"
