@@ -1,163 +1,106 @@
 import pygame
 import pygame.freetype
+import json
+import copy
+import random
+from .dice import Dices
+from .card import Card
+from .player import Player
+from services.data_loader import DataLoader
 from typing import List, Dict, Any, Tuple, Optional, Union, Callable
 from enum import Enum
 from ui.inputs import InputField, SubmitButton, Form, InputType, LabelPosition
 from ui.background import Background
 
-class Player:
-    def __init__(self, name=""):
-        self.name = name
-        
-    def __str__(self):
-        return f"Joueur: {self.name}"
+
 
 class Board:
     def __init__(self, screen=None):
-        self.citizens = []
-        self.players = []
-        self.malus = []
-        self.places = []
         self.screen = screen
+        
+        # Les 4 listes principales
+        self.players = []  # List[Player]
+        self.deck_habitants = []  # List[Card]
+        self.deck_malus = []  # List[Card]
+        self.lieux_remaining = {}  # Dict[int, int] - {id_lieu: nombre_restant}
+        
+        # État du jeu
+        self.current_player_index = 0
+        self.current_turn = 1
+        self.remaining_throws = 3
+        
+        # Initialiser les données
+        self.initialize_game_data()
+        
         
         # État pour la gestion des formulaires
         self.setup_state = "ask_num_players"  # "ask_num_players" -> "ask_player_names" -> "done"
+        self.tour = 0
+
         self.num_players_form = None
-        self.player_names_form = None
-        self.num_players = 0
+        self.player_names_form = None    
         
-    def set_players(self, players):
-        self.players = players
+        self.dices = Dices(screen)  
         
-    def set_citizens(self, citizens):
-        self.citizens = citizens
-    
-    def set_places(self, places):
-        self.places = places
-        
-    def set_malus(self, malus):
-        self.malus = malus
-        
-    def set_dices(self, dices):
-        self.dices = dices
-    
-    def create_num_players_form(self):
-        """Crée le formulaire pour demander le nombre de joueurs."""
-        center_x = 640  # Centre de l'écran 1280x720
-        center_y = 360
-        
-        field = InputField(
-            name="num_players",
-            input_type=InputType.INTEGER,
-            x=self.screen.get_width() // 2 - 150, y=self.screen.get_height() // 2 - 25,  # Centré
-            width=300, height=50,
-            label_text="Nombre de joueurs (2-5)",
-            label_position=LabelPosition.TOP,
-            label_color=(255, 255, 255),
-            placeholder="Entrez le nombre de joueurs",
-            required=True,
-            min_value=2,
-            max_value=5,
-            border_radius=8,
-            font_size=18
-        )
-        
-        button = SubmitButton(
-            text="Valider",
-            x=center_x - 60, y=center_y + 50,
-            width=120, height=45,
-            border_radius=8
-        )
-        
-        def on_submit(data):
-            self.num_players = data.get("num_players", 2)
-            self.setup_state = "ask_player_names"
-            self.create_player_names_form()
-        
-        self.num_players_form = Form(
-            fields=[field],
-            submit_button=button,
-            on_submit=on_submit
-        )
-    
-    def create_player_names_form(self):
-        """Crée le formulaire pour demander les noms des joueurs."""
-        fields = []
-        start_x = 200
-        start_y = 150
-        field_spacing = 80  # Espacement entre les champs
-        
-        for i in range(self.num_players):
-            field = InputField(
-                name=f"player_{i}",
-                input_type=InputType.TEXT,
-                x=start_x, y=start_y + i * field_spacing,
-                width=400, height=50,
-                label_text=f"Nom du joueur {i + 1}",
-                label_position=LabelPosition.TOP,
-                placeholder=f"Joueur {i + 1}",
-                required=True,
-                max_length=20,
-                border_radius=8,
-                font_size=16
-            )
-            fields.append(field)
-        
-        button_y = start_y + self.num_players * field_spacing + 30
-        button = SubmitButton(
-            text="Créer les joueurs",
-            x=start_x, y=button_y,
-            width=180, height=50,
-            border_radius=8
-        )
-        
-        def on_submit(data):
-            # Créer les joueurs avec les noms fournis
-            players = []
-            for i in range(self.num_players):
-                name = data.get(f"player_{i}", f"Joueur {i + 1}")
-                if not name or not name.strip():
-                    name = f"Joueur {i + 1}"
-                players.append(Player(name.strip()))
-            
-            self.set_players(players)
-            self.setup_state = "done"
-            print(f"Joueurs créés: {[str(player) for player in self.players]}")
-        
-        self.player_names_form = Form(
-            fields=fields,
-            submit_button=button,
-            on_submit=on_submit
-        )
+        # Préchargement des images
+        self.dos_habitant_image = pygame.transform.scale(pygame.image.load("assets/images/cards/back/1.png"), (150, 209))  
     
     def handle_event(self, event):
         if self.setup_state == "ask_num_players":
-            if not self.num_players_form:
-                self.create_num_players_form()
-            return self.num_players_form.handle_event(event)
+            if self.num_players_form:
+                return self.num_players_form.handle_event(event)
         
         elif self.setup_state == "ask_player_names":
             if self.player_names_form:
                 return self.player_names_form.handle_event(event)
         
+        elif self.setup_state == "done":  # ← AJOUTER ÇA
+            if self.dices:
+                self.dices.event(event, self.screen)
+                return True
+        
         return False
     
+        
+    
+    def reset_setup(self):
+        """Remet à zéro la configuration."""
+        self.players = []
+        self.setup_state = "ask_num_players"
+        self.num_players_form = None
+        self.player_names_form = None
+        self.num_players = 0
+        
+    def initialize_game_data(self):
+        try:
+            self.lieux_remaining = {0: 3, 1: 3, 2: 3, 3: 3, 4: 3}
+            self.deck_habitants = DataLoader.load_habitants(self)
+            self.deck_malus = DataLoader.load_malus(self)
+        except Exception as e:
+            print(f"Erreur lors de l'initialisation: {e}")
+        
+
     def update(self, dt):
         if self.setup_state == "ask_num_players" and self.num_players_form:
             self.num_players_form.update(dt)
         elif self.setup_state == "ask_player_names" and self.player_names_form:
             self.player_names_form.update(dt)
     
+    
     def show(self, screen):
-        """Affiche le board selon l'état actuel."""
         
         font_title = pygame.freetype.Font(None, 28)
         if self.setup_state == "ask_num_players":
+            if not self.num_players_form:
+                from ui.numplayerform import create_num_players_form
+                create_num_players_form(self)
+            
             if self.num_players_form:
                 title_text = f"Nombre de joueurs"
                 title_rect = font_title.get_rect(title_text)
                 font_title.render_to(screen, ((screen.get_width() - title_rect.width) // 2, 80), title_text, (255, 255, 255))
-                self.create_num_players_form()
+                
+                # Ne PAS recréer le formulaire ici - juste l'afficher
                 self.num_players_form.draw(screen)
             
         elif self.setup_state == "ask_player_names":
@@ -171,27 +114,67 @@ class Board:
                 self.player_names_form.draw(screen)
         
         elif self.setup_state == "done":
-            # Affichage du plateau de jeu normal
-            self.show_game_board(screen)
-    
-    def show_game_board(self, screen):
-        """Affiche le plateau de jeu une fois les joueurs configurés."""
-        font = pygame.freetype.Font(None, 24)
-        font.render_to(screen, (50, 50), "Joueurs:", (255, 255, 255))
-        
-        # Afficher la liste des joueurs
-        y = 100
-        font_players = pygame.freetype.Font(None, 18)
-        for i, player in enumerate(self.players):
-            font_players.render_to(screen, (70, y), f"{i + 1}. {player.name}", (200, 200, 255))
-            y += 25
             
-        
-    
-    def reset_setup(self):
-        """Remet à zéro la configuration."""
-        self.players = []
-        self.setup_state = "ask_num_players"
-        self.num_players_form = None
-        self.player_names_form = None
-        self.num_players = 0
+            if self.dices:
+                self.dices.show(screen)
+            
+            
+            # Affichage du plateau de jeu
+            font = pygame.freetype.Font(None, 24)
+            font_small = pygame.freetype.Font(None, 18)
+            
+            
+            
+            # encadré des informations du tour
+            max_line_width = 0
+            for i, player in enumerate(self.players):
+                line_text = f"{i + 1}. {player.name}"
+                line_width = font_small.get_rect(line_text).width
+                max_line_width = max(max_line_width, line_width)
+                
+            info_rect = pygame.Rect(30, 40, 40+max(font.get_rect("Joueurs:").width, max_line_width), 70+25*len(self.players))
+            pygame.draw.rect(screen, (0x282C34), info_rect, border_radius=10)
+            pygame.draw.rect(screen, (0xFFFFFF), info_rect, 2, border_radius=10)
+            
+            # joueurs
+            font.render_to(screen, (50, 60), "Joueurs:", (255, 255, 255))
+            y = 90
+            for i, player in enumerate(self.players):
+                color = (255, 255, 0) if i == self.current_player_index else (200, 200, 255)
+                font_small.render_to(screen, (70, y), f"{i + 1}. {player.name}", color)
+                y += 25
+            
+
+            
+            # Deck habitants
+            deck_x, deck_y = 50, 180
+            deck_surface = pygame.Surface((150, 209))
+
+            # AVANT : deck_surface.fill((100, 100, 100))
+            # APRÈS : Charger et blitter l'image # Redimensionner
+            deck_surface.blit(self.dos_habitant_image, (0, 0))
+
+            pygame.draw.rect(deck_surface, (255, 255, 255), (0, 0, 150, 209), 2, border_radius=10)
+            habitants_count = str(len(self.deck_habitants))
+            count_rect = font.get_rect(habitants_count)
+            font.render_to(deck_surface, (60 - count_rect.width//2, 40 - count_rect.height//2), habitants_count, (255, 255, 255))
+            screen.blit(deck_surface, (deck_x, deck_y))
+            
+            
+            # # Deck malus
+            # deck_y += 100
+            # pygame.draw.rect(screen, (150, 50, 50), (deck_x, deck_y, 120, 80))
+            # pygame.draw.rect(screen, (255, 255, 255), (deck_x, deck_y, 120, 80), 2)
+            # font_small.render_to(screen, (deck_x + 10, deck_y + 10), "Malus", (255, 255, 255))
+            # malus_count = str(len(self.deck_malus))
+            # count_rect = font.get_rect(malus_count)
+            # font.render_to(screen, (deck_x + 60 - count_rect.width//2, deck_y + 40), malus_count, (255, 255, 255))
+            
+            # # Lieux restants
+            # deck_y += 100
+            # pygame.draw.rect(screen, (50, 100, 150), (deck_x, deck_y, 120, 80))
+            # pygame.draw.rect(screen, (255, 255, 255), (deck_x, deck_y, 120, 80), 2)
+            # font_small.render_to(screen, (deck_x + 10, deck_y + 10), "Lieux", (255, 255, 255))
+            # lieux_total = str(sum(self.lieux_remaining.values()))
+            # count_rect = font.get_rect(lieux_total)
+            # font.render_to(screen, (deck_x + 60 - count_rect.width//2, deck_y + 40), lieux_total, (255, 255, 255))

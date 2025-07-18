@@ -94,10 +94,10 @@ class Dices:
         self.surface.fill((0, 0, 0, 0))
         pygame.draw.rect(self.surface, config.dice().shake_button_color, ( 4, 4, self.surface.get_width()-8, self.surface.get_height()-8), border_radius=config.dice().border_radius)
         self.surface.blit(self.text, (self.surface.get_width()/2-self.text.get_width()/2, self.surface.get_height()/2-self.text.get_height()/2))
-        for dice in self.dices:
-            dice.show(screen)
         screen.blit(self.surface, (self.rect.x, self.rect.y))
         pygame.display.update(self.rect)
+        for dice in self.dices:
+            dice.show(screen)
 
     def event(self, event, screen):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -105,6 +105,8 @@ class Dices:
             for i, dice in enumerate(self.dices):
                 if dice.rect.collidepoint(mouse_pos):
                     dice.select(screen)
+                    return
             if self.rect.collidepoint(mouse_pos):
                 self.shake(screen)
+                return
                 

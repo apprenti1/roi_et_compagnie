@@ -1,20 +1,14 @@
 [
     {
-        "nom": "Dragon",
-        "lieu": "Aucun",
-        "condition": "Somme des dés ≥ valeur spécifique (ex: 28)",
-        "code_condition": "",
-        "texture_conditions": "",
-        "points": [-4, -2],
-        "effet_special": "Doit être donné à un autre joueur (points négatifs)"
-    },
-    {
         "nom": "Voleur",
+        "texture": "plouc",
         "lieu": "Aucun",
+        "id_lieu": -1,
         "condition": "Échec de recrutement",
         "code_condition": "",
         "texture_conditions": "",
         "points": [-4, -2],
-        "effet_special": "Fait perdre des points en fin de partie"
+        "effet_special": "Fait perdre des points en fin de partie",
+        "id_effet_special": 0
     }
 ]
