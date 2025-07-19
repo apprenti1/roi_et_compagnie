@@ -17,7 +17,7 @@
     },
     {
         "nom": "Elfe arrogant",
-        "texture": "elfe",
+        "texture": "cremiere",
         "lieu": "Ville (jaune)",
         "id_lieu": 0,
         "condition": "Suite de chiffres consécutifs (ex: 1-2-3-4-5)",
@@ -134,5 +134,38 @@
         "points": [2, 4],
         "effet_special": "Permet de prendre aussi la carte d’habitant à droite",
         "id_effet_special": 3
+    },
+    {
+        "nom": "Fée zélée",
+        "texture": "fee",
+        "lieu": "Forêt enchantée (violet)",
+        "id_lieu": 4,
+        "condition": "Combinaison de couleurs spécifiques (ex: 2 verts, 2 bleus)",
+        "code_condition": 
+        [
+            "dices.count(1) == 2 and dices.count(2) == 2",
+            "dices.count(3) == 2 and dices.count(4) == 2",
+            "dices.count(5) == 2 and dices.count(6) == 2"
+        ],
+        "texture_conditions": "",
+        "points": [1, 2, 3, 4],
+        "effet_special": "Les points augmentent de manière exponentielle en fonction du nombre de Fées zélées que vous possédez.",
+        "id_effet_special": 4
+    },
+    {
+        "nom": "Dragon",
+        "texture": "dragon",
+        "lieu": "Aucun lieu spécifique",
+        "id_lieu": -1,
+        "condition": "Somme des dés supérieure ou égale à une certaine valeur (par exemple, 30)",
+        "code_condition": 
+        [
+            "sum(dices) >= 30"
+        ],
+        "texture_conditions": "",
+        "points": [-4],
+        "effet_special": "Fait perdre des points en fin de partie",
+        "id_effet_special": 5
     }
+
 ]

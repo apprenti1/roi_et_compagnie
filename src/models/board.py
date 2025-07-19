@@ -43,7 +43,7 @@ class Board:
         self.dices = Dices(screen)  
         
         # Préchargement des images
-        self.dos_habitant_image = pygame.transform.scale(pygame.image.load("assets/images/cards/back/1.png"), (150, 209))  
+        self.textures = DataLoader.load_images()
     
     def handle_event(self, event):
         if self.setup_state == "ask_num_players":
@@ -74,8 +74,8 @@ class Board:
     def initialize_game_data(self):
         try:
             self.lieux_remaining = {0: 3, 1: 3, 2: 3, 3: 3, 4: 3}
-            self.deck_habitants = DataLoader.load_habitants(self)
-            self.deck_malus = DataLoader.load_malus(self)
+            self.deck_habitants = DataLoader.load_habitants()
+            self.deck_malus = DataLoader.load_malus()
         except Exception as e:
             print(f"Erreur lors de l'initialisation: {e}")
         
@@ -132,7 +132,7 @@ class Board:
                 line_width = font_small.get_rect(line_text).width
                 max_line_width = max(max_line_width, line_width)
                 
-            info_rect = pygame.Rect(30, 40, 40+max(font.get_rect("Joueurs:").width, max_line_width), 70+25*len(self.players))
+            info_rect = pygame.Rect(30, 40, 40+max(font.get_rect("Joueurs:").width, max_line_width), 60+25*len(self.players))
             pygame.draw.rect(screen, (0x282C34), info_rect, border_radius=10)
             pygame.draw.rect(screen, (0xFFFFFF), info_rect, 2, border_radius=10)
             
@@ -147,19 +147,37 @@ class Board:
 
             
             # Deck habitants
-            deck_x, deck_y = 50, 180
+            deck_x, deck_y = 30, 240
             deck_surface = pygame.Surface((150, 209))
+            deck_surface.blit(self.textures["backs"][0], (0, 0))
 
-            # AVANT : deck_surface.fill((100, 100, 100))
-            # APRÈS : Charger et blitter l'image # Redimensionner
-            deck_surface.blit(self.dos_habitant_image, (0, 0))
-
-            pygame.draw.rect(deck_surface, (255, 255, 255), (0, 0, 150, 209), 2, border_radius=10)
-            habitants_count = str(len(self.deck_habitants))
-            count_rect = font.get_rect(habitants_count)
-            font.render_to(deck_surface, (60 - count_rect.width//2, 40 - count_rect.height//2), habitants_count, (255, 255, 255))
+            pygame.draw.rect(deck_surface, (255, 255, 255), (0, 0, 150, 209), 3, border_radius=10)
+            habitants_count = len(self.deck_habitants)
+            count_rect = font.get_rect(str(habitants_count-5))
+            font.render_to(deck_surface, (75 - count_rect.width//2, 105 - count_rect.height//2), str(habitants_count-5), (255, 255, 255))
             screen.blit(deck_surface, (deck_x, deck_y))
             
+            deck_x += 220
+            
+            for card in self.deck_habitants[:5]:
+                deck_surface = pygame.Surface((150, 209))
+                deck_surface.blit(self.textures["habitants"][card.texture], (0, 0))
+                deck_surface.blit(self.textures["decorations"][card.id_lieu - 1], (0, 0))
+                pygame.draw.rect(deck_surface, (255, 255, 255), (0, 0, 150, 209), 3, border_radius=10)
+                count_rect = font.get_rect(str(card.points))
+                font.render_to(deck_surface, (28 - count_rect.width//2, 20 - count_rect.height//2), str(card.points), (255, 255, 255))
+                screen.blit(deck_surface, (deck_x, deck_y))
+                deck_x += 209
+            
+            deck_x, deck_y = 30, 240
+            for lieu, count in self.lieux_remaining.items():
+                deck_surface = pygame.Surface((150, 209))
+                deck_surface.blit(self.textures["lieux"][lieu], (0, 0))
+                pygame.draw.rect(deck_surface, (255, 255, 255), (0, 0, 150, 209), 3, border_radius=10)
+                count_rect = font.get_rect(str(count))
+                font.render_to(deck_surface, (75 - count_rect.width//2, 105 - count_rect.height//2), str(count), (255, 255, 255))
+                screen.blit(deck_surface, (deck_x, deck_y))
+                deck_x += 209
             
             # # Deck malus
             # deck_y += 100

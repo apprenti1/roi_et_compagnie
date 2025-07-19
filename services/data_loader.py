@@ -1,9 +1,11 @@
+import os
 from src.models.card import Card
 import json
 import random
 import copy
+import pygame
 class DataLoader:
-    def load_habitants(self):
+    def load_habitants():
         try:
             with open('data/habitants.json', 'r', encoding='utf-8') as f:
                 habitants_data = json.load(f)
@@ -32,11 +34,11 @@ class DataLoader:
             return deck_habitants
             
         except FileNotFoundError:
-            print("fichier habitants.json non trouvé")
+            print("fichier habitants.json non trouvé load habitants")
         except Exception as e:
             print(f"erreur lors du chargement des habitants: {e}")
     
-    def load_malus(self):
+    def load_malus():
         try:
             with open('data/penalites.json', 'r', encoding='utf-8') as f:
                 malus_data = json.load(f)
@@ -69,3 +71,88 @@ class DataLoader:
             print("Fichier penalites.json non trouvé")
         except Exception as e:
             print(f"Erreur lors du chargement des malus: {e}")
+    
+    
+    def load_images():
+        try:
+            with open('data/habitants.json', 'r', encoding='utf-8') as f:
+                habitants_data = json.load(f)
+            print("DEBUG: habitants.json ouvert avec succès")
+            
+            habitants = {}
+            
+            for habitant in habitants_data:
+                texture = habitant['texture']
+                habitants[texture] = pygame.transform.scale(pygame.image.load(f"assets/images/cards/habitants/{texture}.png"), (150, 209))
+                
+            print("DEBUG: habitants.json ouvert avec succès")
+            
+            with open('data/penalites.json', 'r', encoding='utf-8') as f:
+                malus_data = json.load(f)
+            print("DEBUG: penalites.json ouvert avec succès")
+            
+            for malus in malus_data:
+                texture = malus['texture']
+                img = pygame.image.load(f"assets/images/cards/penalites/{texture}.png").convert_alpha()
+                img = pygame.transform.scale(img, (150, 209))
+                habitants[texture] = pygame.transform.scale(pygame.image.load("assets/images/cards/back/1.png"), (150, 209))
+            
+            backs = []
+            for filename in os.listdir("assets/images/cards/back/"):
+                if filename.endswith(".png"):
+                    img = pygame.image.load(f"assets/images/cards/back/{filename}").convert_alpha()
+                    img = pygame.transform.scale(img, (150, 209))
+                    backs.append(img)
+
+            
+            decorations = []
+            for filename in os.listdir("assets/images/cards/decorations/vertical/"):
+                if filename.endswith(".png"):
+                    img = pygame.image.load(f"assets/images/cards/decorations/vertical/{filename}").convert_alpha()
+                    img = pygame.transform.scale(img, (150, 209))
+                    decorations.append(img)
+                    print(f"DEBUG: Chargement de l'image {filename} réussi")
+                
+            horizontal_decorations = []
+            for filename in os.listdir("assets/images/cards/decorations/horisontal/"):
+                if filename.endswith(".png"):
+                    img = pygame.image.load(f"assets/images/cards/decorations/horisontal/{filename}").convert_alpha()
+                    img = pygame.transform.scale(img, (150, 209))
+                    horizontal_decorations.append(img)
+                    print(f"DEBUG: Chargement de l'image {filename} réussi")
+                
+            
+            lieux = {}
+            for filename in os.listdir("assets/images/cards/lieux/"):
+                if filename.endswith(".png"):
+                    img = pygame.image.load(f"assets/images/cards/lieux/{filename}").convert_alpha()
+                    img = pygame.transform.scale(img, (150, 209))
+                    lieux[os.path.splitext(filename)[0]] = img
+                    print(f"DEBUG: Chargement de l'image {filename} réussi")
+                
+                
+            textures = {
+                "habitants": habitants,
+                "backs": backs,
+                "decorations": decorations,
+                "horizontal_decorations": horizontal_decorations,
+                "lieux": lieux
+            }
+            
+            
+            return textures
+            
+        except FileNotFoundError as e:
+            print(f"Fichier non trouvé: {e}")
+            return {
+                "habitants": {},
+                "backs": [],
+                "decorations": []
+            }
+        except Exception as e:
+            print(f"Erreur lors du chargement: {e}")
+            return {
+                "habitants": {},
+                "backs": [],
+                "decorations": []
+            }
