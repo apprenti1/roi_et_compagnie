@@ -11,7 +11,7 @@
   },
   {
     "nom": "Mine",
-    "texture": "mine",
+    "texture": "montagne",
     "lieu": "Mine (marron)",
     "id_lieu": 1,
     "condition": "",
@@ -31,7 +31,7 @@
   },
   {
     "nom": "Village des Orcs",
-    "texture": "village_orc",
+    "texture": "camp",
     "lieu": "Village des Orcs (vert)",
     "id_lieu": 3,
     "condition": "",
@@ -41,7 +41,7 @@
   },
   {
     "nom": "Forêt enchantée",
-    "texture": "foret_enchantee",
+    "texture": "foret",
     "lieu": "Forêt enchantée (violet)",
     "id_lieu": 4,
     "condition": "",

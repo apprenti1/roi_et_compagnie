@@ -18,22 +18,22 @@ class Board:
     def __init__(self, screen=None):
         self.screen = screen
         
-        # Les 4 listes principales
-        self.players = []  # List[Player]
-        self.deck_habitants = []  # List[Card]
-        self.deck_malus = []  # List[Card]
-        self.lieux_remaining = {}  # Dict[int, int] - {id_lieu: nombre_restant}
+        # les 4 listes principales
+        self.players = []
+        self.deck_habitants = []
+        self.deck_malus = []
+        self.deck_lieux = []
         
-        # État du jeu
+        # etat du jeu
         self.current_player_index = 0
         self.current_turn = 1
         self.remaining_throws = 3
         
-        # Initialiser les données
+        # initialiser les données
         self.initialize_game_data()
         
         
-        # État pour la gestion des formulaires
+        # etat pour la gestion des formulaires
         self.setup_state = "ask_num_players"  # "ask_num_players" -> "ask_player_names" -> "done"
         self.tour = 0
 
@@ -54,7 +54,7 @@ class Board:
             if self.player_names_form:
                 return self.player_names_form.handle_event(event)
         
-        elif self.setup_state == "done":  # ← AJOUTER ÇA
+        elif self.setup_state == "done":
             if self.dices:
                 self.dices.event(event, self.screen)
                 return True
@@ -64,7 +64,6 @@ class Board:
         
     
     def reset_setup(self):
-        """Remet à zéro la configuration."""
         self.players = []
         self.setup_state = "ask_num_players"
         self.num_players_form = None
@@ -73,12 +72,17 @@ class Board:
         
     def initialize_game_data(self):
         try:
-            self.lieux_remaining = {0: 3, 1: 3, 2: 3, 3: 3, 4: 3}
+            self.deck_lieux = DataLoader.load_lieux()
             self.deck_habitants = DataLoader.load_habitants()
             self.deck_malus = DataLoader.load_malus()
         except Exception as e:
             print(f"Erreur lors de l'initialisation: {e}")
         
+
+    def mouse_in_card(self, x, y, width, height):
+        mouse_pos = pygame.mouse.get_pos()
+        card_rect = pygame.Rect(x, y, width, height)
+        return card_rect.collidepoint(mouse_pos)
 
     def update(self, dt):
         if self.setup_state == "ask_num_players" and self.num_players_form:
@@ -100,7 +104,6 @@ class Board:
                 title_rect = font_title.get_rect(title_text)
                 font_title.render_to(screen, ((screen.get_width() - title_rect.width) // 2, 80), title_text, (255, 255, 255))
                 
-                # Ne PAS recréer le formulaire ici - juste l'afficher
                 self.num_players_form.draw(screen)
             
         elif self.setup_state == "ask_player_names":
@@ -119,7 +122,7 @@ class Board:
                 self.dices.show(screen)
             
             
-            # Affichage du plateau de jeu
+            # afichage du plateau de jeu
             font = pygame.freetype.Font(None, 24)
             font_small = pygame.freetype.Font(None, 18)
             
@@ -146,7 +149,7 @@ class Board:
             
 
             
-            # Deck habitants
+            # deck habitants
             deck_x, deck_y = 30, 240
             deck_surface = pygame.Surface((150, 209))
             deck_surface.blit(self.textures["backs"][0], (0, 0))
@@ -157,42 +160,26 @@ class Board:
             font.render_to(deck_surface, (75 - count_rect.width//2, 105 - count_rect.height//2), str(habitants_count-5), (255, 255, 255))
             screen.blit(deck_surface, (deck_x, deck_y))
             
-            deck_x += 220
+            deck_x += 180
             
             for card in self.deck_habitants[:5]:
                 deck_surface = pygame.Surface((150, 209))
                 deck_surface.blit(self.textures["habitants"][card.texture], (0, 0))
-                deck_surface.blit(self.textures["decorations"][card.id_lieu - 1], (0, 0))
-                pygame.draw.rect(deck_surface, (255, 255, 255), (0, 0, 150, 209), 3, border_radius=10)
+                deck_surface.blit(self.textures["decorations"][card.id_lieu], (0, 0))
+                pygame.draw.rect(deck_surface, (255,255,0) if self.mouse_in_card(deck_x, deck_y, 150, 209) else (255, 255, 255), (0, 0, 150, 209), 3, border_radius=10)
                 count_rect = font.get_rect(str(card.points))
                 font.render_to(deck_surface, (28 - count_rect.width//2, 20 - count_rect.height//2), str(card.points), (255, 255, 255))
                 screen.blit(deck_surface, (deck_x, deck_y))
-                deck_x += 209
+                deck_x += 219
             
-            deck_x, deck_y = 30, 240
-            for lieu, count in self.lieux_remaining.items():
-                deck_surface = pygame.Surface((150, 209))
-                deck_surface.blit(self.textures["lieux"][lieu], (0, 0))
-                pygame.draw.rect(deck_surface, (255, 255, 255), (0, 0, 150, 209), 3, border_radius=10)
-                count_rect = font.get_rect(str(count))
-                font.render_to(deck_surface, (75 - count_rect.width//2, 105 - count_rect.height//2), str(count), (255, 255, 255))
+            deck_x, deck_y = 180, 70
+            for lieu in self.deck_lieux:
+                deck_surface = pygame.Surface((209, 150))
+                deck_surface.blit(self.textures["lieux"][lieu[1].texture], (0, 0))
+                deck_surface.blit(self.textures["horizontal_decorations"][lieu[1].id_lieu], (0, 0))
+                pygame.draw.rect(deck_surface, (255, 255, 255), (0, 0, 209, 150), 3, border_radius=10)
+                count_rect = font.get_rect(str(lieu[1].points))
+                font.render_to(deck_surface, (60 - count_rect.width//2, 132 - count_rect.height//2), str(lieu[1].points), (255, 255, 255))
                 screen.blit(deck_surface, (deck_x, deck_y))
-                deck_x += 209
+                deck_x += 219
             
-            # # Deck malus
-            # deck_y += 100
-            # pygame.draw.rect(screen, (150, 50, 50), (deck_x, deck_y, 120, 80))
-            # pygame.draw.rect(screen, (255, 255, 255), (deck_x, deck_y, 120, 80), 2)
-            # font_small.render_to(screen, (deck_x + 10, deck_y + 10), "Malus", (255, 255, 255))
-            # malus_count = str(len(self.deck_malus))
-            # count_rect = font.get_rect(malus_count)
-            # font.render_to(screen, (deck_x + 60 - count_rect.width//2, deck_y + 40), malus_count, (255, 255, 255))
-            
-            # # Lieux restants
-            # deck_y += 100
-            # pygame.draw.rect(screen, (50, 100, 150), (deck_x, deck_y, 120, 80))
-            # pygame.draw.rect(screen, (255, 255, 255), (deck_x, deck_y, 120, 80), 2)
-            # font_small.render_to(screen, (deck_x + 10, deck_y + 10), "Lieux", (255, 255, 255))
-            # lieux_total = str(sum(self.lieux_remaining.values()))
-            # count_rect = font.get_rect(lieux_total)
-            # font.render_to(screen, (deck_x + 60 - count_rect.width//2, deck_y + 40), lieux_total, (255, 255, 255))

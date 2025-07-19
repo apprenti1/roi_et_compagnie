@@ -72,6 +72,35 @@ class DataLoader:
         except Exception as e:
             print(f"Erreur lors du chargement des malus: {e}")
     
+    def load_lieux():
+        try:
+            with open('data/lieux.json', 'r', encoding='utf-8') as f:
+                lieux_data = json.load(f)
+            
+            deck_lieux = []
+            
+            for lieu in lieux_data:
+                card = Card(
+                    nom=lieu['nom'],
+                    texture=lieu['texture'],
+                    lieu=lieu['lieu'],
+                    id_lieu=lieu['id_lieu'],
+                    condition=lieu['condition'],
+                    code_condition=lieu['code_condition'],
+                    points=lieu['points'],
+                    effet_special=None,
+                    id_effet_special=-1,
+                    card_type="lieu"
+                )
+                
+                deck_lieux.append([3, card])
+            
+            return deck_lieux
+            
+        except FileNotFoundError:
+            print("Fichier lieux.json non trouvé")
+        except Exception as e:
+            print(f"Erreur lors du chargement des lieux: {e}")
     
     def load_images():
         try:
@@ -117,7 +146,7 @@ class DataLoader:
             for filename in os.listdir("assets/images/cards/decorations/horisontal/"):
                 if filename.endswith(".png"):
                     img = pygame.image.load(f"assets/images/cards/decorations/horisontal/{filename}").convert_alpha()
-                    img = pygame.transform.scale(img, (150, 209))
+                    img = pygame.transform.scale(img, (209, 150))
                     horizontal_decorations.append(img)
                     print(f"DEBUG: Chargement de l'image {filename} réussi")
                 
@@ -126,7 +155,7 @@ class DataLoader:
             for filename in os.listdir("assets/images/cards/lieux/"):
                 if filename.endswith(".png"):
                     img = pygame.image.load(f"assets/images/cards/lieux/{filename}").convert_alpha()
-                    img = pygame.transform.scale(img, (150, 209))
+                    img = pygame.transform.scale(img, (209, 150))
                     lieux[os.path.splitext(filename)[0]] = img
                     print(f"DEBUG: Chargement de l'image {filename} réussi")
                 

@@ -26,15 +26,7 @@ class Game:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-                
-                # Transmettre TOUS les événements au board
-                # Le board décidera s'il doit les traiter ou non
                 board_handled = self.board.handle_event(event)
-                
-                # Si le board n'a pas traité l'événement, le traiter ici
-                if not board_handled:
-                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                        self.dices.event(event, self.screen)
             
             # Mettre à jour les composants
             self.board.update(dt)  # Important pour les curseurs clignotants
