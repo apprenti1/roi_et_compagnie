@@ -122,13 +122,12 @@ class DataLoader:
             
             for malus in malus_data:
                 texture = malus['texture']
-                img = pygame.image.load(f"assets/images/cards/penalites/{texture}.png").convert_alpha()
-                img = pygame.transform.scale(img, (150, 209))
-                habitants[texture] = pygame.transform.scale(pygame.image.load("assets/images/cards/back/1.png"), (150, 209))
+                habitants[texture] = pygame.transform.scale(pygame.image.load(f"assets/images/cards/penalites/{texture}.png"), (150, 209))
             
             backs = []
             for filename in os.listdir("assets/images/cards/back/"):
                 if filename.endswith(".png"):
+                    print(f"DEBUG: Chargement de l'image {filename} réussi")
                     img = pygame.image.load(f"assets/images/cards/back/{filename}").convert_alpha()
                     img = pygame.transform.scale(img, (150, 209))
                     backs.append(img)

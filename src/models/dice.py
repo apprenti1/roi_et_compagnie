@@ -70,6 +70,8 @@ class Dice:
     
 class Dices:
     def __init__(self, screen=None, shake_duration=config.dice().shake_duration):
+        self.shake_duration = shake_duration
+        self.remaining_shakes = shake_duration  # Compteur pour les shakes restants
         self.dices = [Dice(screen, i) for i in range(6)]
         self.rect = pygame.Rect(
             config.dice().global_margin_left,
@@ -78,26 +80,44 @@ class Dices:
         )
         self.surface = pygame.Surface(self.rect.size, pygame.SRCALPHA)
         self.font = pygame.font.Font(config.dice().shake_text_font, config.dice().shake_text_size)
-        self.text = self.font.render("Shake({})".format(shake_duration), True, config.dice().text_color)
+        self.update_text()  # Méthode pour mettre à jour le texte
         
+    def update_text(self):
+        """Met à jour le texte du bouton avec le nombre de shakes restants"""
+        self.text = self.font.render("Shake({})".format(self.remaining_shakes), True, config.dice().text_color)
     
-    def shake(self, screen=None, shake_duration=config.dice().shake_duration):
-        self.text = self.font.render("Shake({})".format(shake_duration), True, config.dice().text_color)
-        screen.blit(self.surface, (self.rect.x, self.rect.y))
-        pygame.display.update(self.rect)
-        # print("shaked")
-        for dice in self.dices:
-            dice.shake(screen) if dice.selected else None
+    def shake(self, screen=None):
+        if self.remaining_shakes > 0:
+            self.remaining_shakes -= 1
+            self.update_text()  # Met à jour le texte
+            
+            # Shake les dés sélectionnés
+            for dice in self.dices:
+                if dice.selected:
+                    dice.shake(screen)
+            
+            # Redessine le bouton complet
+            self.show(screen)
     
+    def reset_shakes(self):
+        """Réinitialise le compteur de shakes"""
+        self.remaining_shakes = self.shake_duration
+        self.update_text()
     
     def show(self, screen):
         self.surface.fill((0, 0, 0, 0))
-        pygame.draw.rect(self.surface, config.dice().shake_button_color, ( 4, 4, self.surface.get_width()-8, self.surface.get_height()-8), border_radius=config.dice().border_radius)
-        self.surface.blit(self.text, (self.surface.get_width()/2-self.text.get_width()/2, self.surface.get_height()/2-self.text.get_height()/2))
+        pygame.draw.rect(self.surface, config.dice().shake_button_color, 
+                        (4, 4, self.surface.get_width()-8, self.surface.get_height()-8), 
+                        border_radius=config.dice().border_radius)
+        self.surface.blit(self.text, 
+                         (self.surface.get_width()/2-self.text.get_width()/2, 
+                          self.surface.get_height()/2-self.text.get_height()/2))
         screen.blit(self.surface, (self.rect.x, self.rect.y))
-        pygame.display.update(self.rect)
+        
         for dice in self.dices:
             dice.show(screen)
+        
+        pygame.display.update(self.rect)
 
     def event(self, event, screen):
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -109,4 +129,10 @@ class Dices:
             if self.rect.collidepoint(mouse_pos):
                 self.shake(screen)
                 return
-                
+            
+    def get_selected_dices(self):
+        return [dice for dice in self.dices if dice.selected]
+    def reset_dices(self):
+        for dice in self.dices:
+            dice.selected = True
+            dice.shake()

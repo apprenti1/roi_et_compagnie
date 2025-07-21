@@ -17,12 +17,15 @@ from ui.background import Background
 class Board:
     def __init__(self, screen=None):
         self.screen = screen
+        self.message = ""
         
         # les 4 listes principales
         self.players = []
         self.deck_habitants = []
         self.deck_malus = []
         self.deck_lieux = []
+        
+        self.cardsrects = []
         
         # etat du jeu
         self.current_player_index = 0
@@ -55,6 +58,12 @@ class Board:
                 return self.player_names_form.handle_event(event)
         
         elif self.setup_state == "done":
+            for key, rect in enumerate(self.cardsrects):
+                if self.mouse_in_card(rect.x, rect.y, rect.width, rect.height):
+                    if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                        self.card_clicked(key)
+                        return True
+                        
             if self.dices:
                 self.dices.event(event, self.screen)
                 return True
@@ -83,6 +92,38 @@ class Board:
         mouse_pos = pygame.mouse.get_pos()
         card_rect = pygame.Rect(x, y, width, height)
         return card_rect.collidepoint(mouse_pos)
+    
+    def card_clicked(self, graphicid):
+        print(f"Carte {graphicid} cliquée")
+        
+        if graphicid < 5:
+            selected_dices = self.dices.get_selected_dices()
+            replay = False
+            getrigt = False
+            givetoother = False
+            if eval(self.deck_habitants[graphicid].code_condition) and selected_dices:
+                self.players[self.current_player_index].shake_count = 3
+                if self.deck_habitants[graphicid].id_effet_special == 1:
+                    self.players[self.current_player_index].shake_count += 1
+                elif self.deck_habitants[graphicid].id_effet_special == 2:
+                    replay = True
+                elif self.deck_habitants[graphicid].id_effet_special == 3:
+                    getrigt = True
+                elif self.deck_habitants[graphicid].id_effet_special == 5:
+                    givetoother = True
+                self.players[self.current_player_index].deck.append(self.deck_habitants[graphicid])
+                self.deck_habitants.pop(graphicid)
+                self.dices.reset_dices()
+                self.current_player_index = (self.current_player_index + 1) % len(self.players)
+            else:
+                print(f"Condition non remplie pour la carte {graphicid}: {self.deck_habitants[graphicid].condition}")
+        else:
+            self.players[self.current_player_index].deck.append(self.deck_malus[0])
+            self.deck_malus.pop(0)
+            self.dices.reset_dices()
+            self.current_player_index = (self.current_player_index + 1) % len(self.players)
+        
+        
 
     def update(self, dt):
         if self.setup_state == "ask_num_players" and self.num_players_form:
@@ -121,12 +162,23 @@ class Board:
             if self.dices:
                 self.dices.show(screen)
             
-            
             # afichage du plateau de jeu
             font = pygame.freetype.Font(None, 24)
             font_small = pygame.freetype.Font(None, 18)
             
+            #mon royaume
+            info_rect = pygame.Rect(260, 470, 500, 210)
+            pygame.draw.rect(screen, (0x282C34), info_rect, border_radius=10)
+            pygame.draw.rect(screen, (0xFFFFFF), info_rect, 2, border_radius=10)
+            font_small.render_to(screen, (info_rect.x + 20, info_rect.y + 20), "Mon Royaume:", (255, 255, 255))
+
             
+            
+            #message erreur/indications
+            info_rect = pygame.Rect(775, 470, 300, 210)
+            pygame.draw.rect(screen, (0x282C34), info_rect, border_radius=10)
+            pygame.draw.rect(screen, (0xFFFFFF), info_rect, 2, border_radius=10)
+            font_small.render_to(screen, (info_rect.x + 20, info_rect.y + 20), "Messages:", (255, 255, 255))
             
             # encadré des informations du tour
             max_line_width = 0
@@ -164,6 +216,7 @@ class Board:
             
             for card in self.deck_habitants[:5]:
                 deck_surface = pygame.Surface((150, 209))
+                self.cardsrects.append(pygame.Rect(deck_x, deck_y, 150, 209))
                 deck_surface.blit(self.textures["habitants"][card.texture], (0, 0))
                 deck_surface.blit(self.textures["decorations"][card.id_lieu], (0, 0))
                 pygame.draw.rect(deck_surface, (255,255,0) if self.mouse_in_card(deck_x, deck_y, 150, 209) else (255, 255, 255), (0, 0, 150, 209), 3, border_radius=10)
@@ -171,8 +224,20 @@ class Board:
                 font.render_to(deck_surface, (28 - count_rect.width//2, 20 - count_rect.height//2), str(card.points), (255, 255, 255))
                 screen.blit(deck_surface, (deck_x, deck_y))
                 deck_x += 219
+                
+            deck_x -= 219
+            deck_y += 229
+            deck_surface = pygame.Surface((150, 209))
+            self.cardsrects.append(pygame.Rect(deck_x, deck_y, 150, 209))
+            deck_surface.blit(self.textures["habitants"][self.deck_malus[0].texture], (0, 0))
+            deck_surface.blit(self.textures["decorations"][0], (0, 0))
+            pygame.draw.rect(deck_surface, (255,255,0) if self.mouse_in_card(deck_x, deck_y, 150, 209) else (255, 255, 255), (0, 0, 150, 209), 3, border_radius=10)
+            count_rect = font.get_rect(str(self.deck_malus[0].points))
+            font.render_to(deck_surface, (28 - count_rect.width//2, 20 - count_rect.height//2), str(self.deck_malus[0].points), (255, 255, 255))
+            pygame.draw.rect(deck_surface, (255, 255, 255), (0, 0, 150, 209), 3, border_radius=10)
+            screen.blit(deck_surface, (deck_x, deck_y))
             
-            deck_x, deck_y = 180, 70
+            deck_x, deck_y = 180, 40
             for lieu in self.deck_lieux:
                 deck_surface = pygame.Surface((209, 150))
                 deck_surface.blit(self.textures["lieux"][lieu[1].texture], (0, 0))
@@ -182,4 +247,8 @@ class Board:
                 font.render_to(deck_surface, (60 - count_rect.width//2, 132 - count_rect.height//2), str(lieu[1].points), (255, 255, 255))
                 screen.blit(deck_surface, (deck_x, deck_y))
                 deck_x += 219
+                
+
+                
+            
             
