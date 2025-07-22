@@ -69,7 +69,7 @@ class Dice:
     
     
 class Dices:
-    def __init__(self, screen=None, shake_duration=config.dice().shake_duration):
+    def __init__(self, screen, shake_duration=config.dice().shake_duration):
         self.shake_duration = shake_duration
         self.remaining_shakes = shake_duration  # Compteur pour les shakes restants
         self.dices = [Dice(screen, i) for i in range(6)]
@@ -100,7 +100,6 @@ class Dices:
             self.show(screen)
     
     def reset_shakes(self):
-        """Réinitialise le compteur de shakes"""
         self.remaining_shakes = self.shake_duration
         self.update_text()
     
@@ -133,6 +132,8 @@ class Dices:
     def get_selected_dices(self):
         return [dice for dice in self.dices if dice.selected]
     def reset_dices(self):
+        self.reset_shakes()
         for dice in self.dices:
             dice.selected = True
-            dice.shake()
+            dice.set_color(choice(list(Color)))
+            dice.set_number(choice(list(Number)))

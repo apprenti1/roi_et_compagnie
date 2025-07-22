@@ -17,7 +17,7 @@ from ui.background import Background
 class Board:
     def __init__(self, screen=None):
         self.screen = screen
-        self.message = ""
+        self.message = []
         
         # les 4 listes principales
         self.players = []
@@ -102,26 +102,51 @@ class Board:
             getrigt = False
             givetoother = False
             if eval(self.deck_habitants[graphicid].code_condition) and selected_dices:
+                if self.deck_habitants[graphicid].id_lieu == self.deck_lieux[graphicid][1].id_lieu:
+                    self.players[self.current_player_index].deck.append(self.deck_lieux[graphicid][1])
+                    self.deck_lieux[graphicid][0] -= 1
                 self.players[self.current_player_index].shake_count = 3
+                
+                
                 if self.deck_habitants[graphicid].id_effet_special == 1:
                     self.players[self.current_player_index].shake_count += 1
-                elif self.deck_habitants[graphicid].id_effet_special == 2:
-                    replay = True
-                elif self.deck_habitants[graphicid].id_effet_special == 3:
-                    getrigt = True
-                elif self.deck_habitants[graphicid].id_effet_special == 5:
-                    givetoother = True
+                    
+                    
+                if self.deck_habitants[graphicid].id_effet_special == 3:
+                    if self.deck_habitants[graphicid+1].id_lieu == self.deck_lieux[graphicid+1][1].id_lieu:
+                        self.players[self.current_player_index].deck.append(self.deck_lieux[graphicid+1][1])
+                        self.deck_lieux[graphicid+1][0] -= 1
+                    self.players[self.current_player_index].deck.append(self.deck_habitants[graphicid+1])
+                    self.deck_habitants.pop(graphicid+1)
+                    
                 self.players[self.current_player_index].deck.append(self.deck_habitants[graphicid])
                 self.deck_habitants.pop(graphicid)
+                self.players[self.current_player_index].shake_count = 3
+                if self.deck_habitants[graphicid].id_effet_special != 2:
+                    self.current_player_index = (self.current_player_index + 1) % len(self.players)
+                self.dices.shake_duration = self.players[self.current_player_index].shake_count
                 self.dices.reset_dices()
-                self.current_player_index = (self.current_player_index + 1) % len(self.players)
             else:
+                message_text = f"Condition non remplie {self.deck_habitants[graphicid].nom} {self.deck_habitants[graphicid].condition} {self.deck_habitants[graphicid].code_condition}"
+                words = message_text.split()
+                line = ""
+                for word in words:
+                    if len(line + " " + word) > 40:
+                        if line: self.message.append(line)
+                        line = word
+                    else:
+                        line = line + " " + word if line else word
+                if line: self.message.append(line)                
                 print(f"Condition non remplie pour la carte {graphicid}: {self.deck_habitants[graphicid].condition}")
         else:
             self.players[self.current_player_index].deck.append(self.deck_malus[0])
             self.deck_malus.pop(0)
-            self.dices.reset_dices()
+            self.players[self.current_player_index].shake_count = 3
             self.current_player_index = (self.current_player_index + 1) % len(self.players)
+            self.dices.shake_duration = self.players[self.current_player_index].shake_count
+            self.dices.reset_dices()
+        if self.check_game_end():
+            self.end_game()
         
         
 
@@ -130,6 +155,21 @@ class Board:
             self.num_players_form.update(dt)
         elif self.setup_state == "ask_player_names" and self.player_names_form:
             self.player_names_form.update(dt)
+            
+    def check_game_end(self):
+        if len(self.deck_habitants) <= 5:
+            return True
+        if len(self.deck_malus) == 0:
+            return True
+        for lieu in self.deck_lieux:
+            if lieu[0] == 0:
+                return True
+        return False
+    
+    def end_game(self):
+        self.setup_state = "end"
+        for player in self.players:
+            player.calculate_score()
     
     
     def show(self, screen):
@@ -167,18 +207,24 @@ class Board:
             font_small = pygame.freetype.Font(None, 18)
             
             #mon royaume
-            info_rect = pygame.Rect(260, 470, 500, 210)
+            info_rect = pygame.Rect(260, 485, 300, 210)
             pygame.draw.rect(screen, (0x282C34), info_rect, border_radius=10)
             pygame.draw.rect(screen, (0xFFFFFF), info_rect, 2, border_radius=10)
             font_small.render_to(screen, (info_rect.x + 20, info_rect.y + 20), "Mon Royaume:", (255, 255, 255))
 
+            for index, card in enumerate(self.players[self.current_player_index].deck):
+                font_small.render_to(screen, (info_rect.x + 20, info_rect.y + 50 + 23*index), str(card), (255, 255, 255))
             
             
             #message erreur/indications
-            info_rect = pygame.Rect(775, 470, 300, 210)
+            info_rect = pygame.Rect(575, 485, 500, 210)
             pygame.draw.rect(screen, (0x282C34), info_rect, border_radius=10)
             pygame.draw.rect(screen, (0xFFFFFF), info_rect, 2, border_radius=10)
             font_small.render_to(screen, (info_rect.x + 20, info_rect.y + 20), "Messages:", (255, 255, 255))
+            
+            for index, message in enumerate(self.message):
+                font_small.render_to(screen, (info_rect.x + 20, info_rect.y + 50 + 23*index), message, (255, 255, 255))
+            
             
             # encadré des informations du tour
             max_line_width = 0
@@ -226,7 +272,7 @@ class Board:
                 deck_x += 219
                 
             deck_x -= 219
-            deck_y += 229
+            deck_y += 245
             deck_surface = pygame.Surface((150, 209))
             self.cardsrects.append(pygame.Rect(deck_x, deck_y, 150, 209))
             deck_surface.blit(self.textures["habitants"][self.deck_malus[0].texture], (0, 0))
@@ -234,21 +280,48 @@ class Board:
             pygame.draw.rect(deck_surface, (255,255,0) if self.mouse_in_card(deck_x, deck_y, 150, 209) else (255, 255, 255), (0, 0, 150, 209), 3, border_radius=10)
             count_rect = font.get_rect(str(self.deck_malus[0].points))
             font.render_to(deck_surface, (28 - count_rect.width//2, 20 - count_rect.height//2), str(self.deck_malus[0].points), (255, 255, 255))
-            pygame.draw.rect(deck_surface, (255, 255, 255), (0, 0, 150, 209), 3, border_radius=10)
-            screen.blit(deck_surface, (deck_x, deck_y))
             
+            malus_count = len(self.deck_malus)
+            malus_count_rect = font.get_rect(str(malus_count))
+            font.render_to(screen, (deck_x + 75 - malus_count_rect.width//2, deck_y - 25), str(malus_count), (255, 255, 255))
+
+            screen.blit(deck_surface, (deck_x, deck_y))
+
             deck_x, deck_y = 180, 40
-            for lieu in self.deck_lieux:
+            for i, lieu in enumerate(self.deck_lieux):
                 deck_surface = pygame.Surface((209, 150))
                 deck_surface.blit(self.textures["lieux"][lieu[1].texture], (0, 0))
                 deck_surface.blit(self.textures["horizontal_decorations"][lieu[1].id_lieu], (0, 0))
                 pygame.draw.rect(deck_surface, (255, 255, 255), (0, 0, 209, 150), 3, border_radius=10)
                 count_rect = font.get_rect(str(lieu[1].points))
                 font.render_to(deck_surface, (60 - count_rect.width//2, 132 - count_rect.height//2), str(lieu[1].points), (255, 255, 255))
+                
+                lieu_count = lieu[0]
+                lieu_count_rect = font.get_rect(str(lieu_count))
+                font.render_to(screen, (deck_x + 104 - lieu_count_rect.width//2, deck_y - 25), str(lieu_count), (255, 255, 255))
+                
                 screen.blit(deck_surface, (deck_x, deck_y))
                 deck_x += 219
                 
-
+        elif self.setup_state == "end":
+            font_title = pygame.freetype.Font(None, 48)
+            font_score = pygame.freetype.Font(None, 32)
+            font_instruction = pygame.freetype.Font(None, 24)
+            
+            # Titre
+            title_text = "Fin du jeu !"
+            title_rect = font_title.get_rect(title_text)
+            font_title.render_to(screen, ((screen.get_width() - title_rect.width) // 2, 100), title_text, (255, 255, 0))
+            
+            # Scores
+            y = 200
+            
+            for player in self.players:
+                score_text = f"{player.name}: {player.score} points"
+                color = (200, 200, 200)
+                score_rect = font_score.get_rect(score_text)
+                font_score.render_to(screen, ((screen.get_width() - score_rect.width) // 2, y), score_text, color)
+                y += 50
                 
             
             

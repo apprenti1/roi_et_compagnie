@@ -7,8 +7,8 @@ class base():
 
 class dice():
     inside_margin = 15
-    global_margin_left = 35
-    global_margin_bottom = 35
+    global_margin_left = 20
+    global_margin_bottom = 20
     size = 60
     border_radius = 7
     text_color = (255, 255, 255)

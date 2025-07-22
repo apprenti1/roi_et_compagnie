@@ -7,10 +7,14 @@
         "condition": "6 dés tous pairs ou tous impairs",
         "code_condition": 
         [
-            "all(dice % 2 == 0 for dice in dices.dices)",
-            "all(dice % 2 == 1 for dice in dices.dices)"
+            "len(selected_dices) == 6 and all(int(dice.number.value) % 2 == 0 for dice in selected_dices)",
+            "len(selected_dices) == 6 and all(int(dice.number.value) % 2 == 1 for dice in selected_dices)"
         ],
-        "texture_conditions": "",
+        "texture_conditions": 
+        [
+            "0",
+            "0"
+        ],
         "points": [2, 4],
         "effet_special": "Aucun",
         "id_effet_special": 0
@@ -23,12 +27,20 @@
         "condition": "Suite de chiffres consécutifs (ex: 1-2-3-4-5)",
         "code_condition": 
         [
-            "sorted(dices) == list(range(1, 4))",
-            "sorted(dices) == list(range(3, 6))",
-            "sorted(dices) == list(range(2, 5))",
-            "sorted(dices) == list(range(1, 6))"
+            "len(selected_dices) >= 3 and sorted([int(dice.number.value) for dice in selected_dices]) == list(range(min([int(dice.number.value) for dice in selected_dices]), max([int(dice.number.value) for dice in selected_dices]) + 1))",
+            "len(selected_dices) == 3 and sorted([int(dice.number.value) for dice in selected_dices]) == [1, 2, 3]",
+            "len(selected_dices) == 3 and sorted([int(dice.number.value) for dice in selected_dices]) == [2, 3, 4]",
+            "len(selected_dices) == 3 and sorted([int(dice.number.value) for dice in selected_dices]) == [3, 4, 5]",
+            "len(selected_dices) == 3 and sorted([int(dice.number.value) for dice in selected_dices]) == [4, 5, 6]"
         ],
-        "texture_conditions": "",
+        "texture_conditions": 
+        [
+            "0",
+            "0",
+            "0",
+            "0",
+            "0"
+        ],
         "points": [3, 5],
         "effet_special": "Prochain tour : 4 lancers au lieu de 3",
         "id_effet_special": 1
@@ -41,13 +53,24 @@
         "condition": "Plusieurs dés avec la même valeur (ex: trois 4)",
         "code_condition": 
         [
-            "dices.count(dices[5]) == 3",
-            "dices.count(dices[1]) == 3",
-            "dices.count(dices[2]) == 4",
-            "dices.count(dices[3]) == 3",
-            "dices.count(dices[4]) == 4"
+            "len(selected_dices) >= 3 and max([int(dice.number.value) for dice in selected_dices].count(v) for v in [int(dice.number.value) for dice in selected_dices]) >= 3",
+            "len(selected_dices) >= 3 and [int(dice.number.value) for dice in selected_dices].count(1) >= 3",
+            "len(selected_dices) >= 3 and [int(dice.number.value) for dice in selected_dices].count(2) >= 3",
+            "len(selected_dices) >= 3 and [int(dice.number.value) for dice in selected_dices].count(3) >= 3",
+            "len(selected_dices) >= 3 and [int(dice.number.value) for dice in selected_dices].count(4) >= 3",
+            "len(selected_dices) >= 3 and [int(dice.number.value) for dice in selected_dices].count(5) >= 3",
+            "len(selected_dices) >= 3 and [int(dice.number.value) for dice in selected_dices].count(6) >= 3"
         ],
-        "texture_conditions": "",
+        "texture_conditions": 
+        [
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0",
+            "0"
+        ],
         "points": [2, 4],
         "effet_special": "Aucun",
         "id_effet_special": 0
@@ -57,12 +80,19 @@
         "texture": "goblin",
         "lieu": "Atelier (bleu)",
         "id_lieu": 2,
-        "condition": "Nombre spécifique de dés d’une couleur (ex: 4 bleus)",
+        "condition": "Nombre spécifique de dés d'une couleur (ex: 4 bleus)",
         "code_condition": 
         [
-            ""
+            "len(selected_dices) >= 4 and [dice.color.name for dice in selected_dices].count('RED') >= 4",
+            "len(selected_dices) >= 4 and [dice.color.name for dice in selected_dices].count('GREEN') >= 4",
+            "len(selected_dices) >= 4 and [dice.color.name for dice in selected_dices].count('BLUE') >= 4"
         ],
-        "texture_conditions": "",
+        "texture_conditions": 
+        [
+            "0",
+            "0",
+            "0"
+        ],
         "points": [2, 4],
         "effet_special": "Aucun",
         "id_effet_special": 0
@@ -75,11 +105,16 @@
         "condition": "Combinaison de valeurs spécifiques (ex: deux 2 et deux 5)",
         "code_condition": 
         [
-            "dices.count(2) == 2 and dices.count(5) == 2",
-            "dices.count(3) == 2 and dices.count(4) == 3",
-            "dices.count(1) == 3 and dices.count(6) == 2"
+            "[int(dice.number.value) for dice in selected_dices].count(2) == 2 and [int(dice.number.value) for dice in selected_dices].count(5) == 2",
+            "[int(dice.number.value) for dice in selected_dices].count(3) == 2 and [int(dice.number.value) for dice in selected_dices].count(4) == 3",
+            "[int(dice.number.value) for dice in selected_dices].count(1) == 3 and [int(dice.number.value) for dice in selected_dices].count(6) == 2"
         ],
-        "texture_conditions": "",
+        "texture_conditions": 
+        [
+            "0",
+            "0",
+            "0"
+        ],
         "points": [2, 4],
         "effet_special": "Aucun",
         "id_effet_special": 0
@@ -89,17 +124,19 @@
         "texture": "lutin",
         "lieu": "Forêt enchantée (violet)",
         "id_lieu": 4,
-        "condition": "Nombre spécifique de dés d’une même couleur (ex: 5 verts)",
+        "condition": "Nombre spécifique de dés d'une même couleur (ex: 5 verts)",
         "code_condition": 
         [
-            "dices.count(1) == 5",
-            "dices.count(2) == 5",
-            "dices.count(3) == 5",
-            "dices.count(4) == 5",
-            "dices.count(5) == 5",
-            "dices.count(6) == 5"
+            "len(selected_dices) >= 5 and [dice.color.name for dice in selected_dices].count('RED') >= 5",
+            "len(selected_dices) >= 5 and [dice.color.name for dice in selected_dices].count('GREEN') >= 5",
+            "len(selected_dices) >= 5 and [dice.color.name for dice in selected_dices].count('BLUE') >= 5"
         ],
-        "texture_conditions": "",
+        "texture_conditions": 
+        [
+            "0",
+            "0",
+            "0"
+        ],
         "points": [2, 4],
         "effet_special": "Aucun",
         "id_effet_special": 0
@@ -112,10 +149,12 @@
         "condition": "Combinaison de couleurs spécifiques (ex: 2 verts, 2 rouges, 2 bleus)",
         "code_condition": 
         [
-            "dices.count(1) == 2 and dices.count(2) == 2 and dices.count(3) == 2",
-            "dices.count(4) == 2 and dices.count(5) == 2 and dices.count(6) == 2"
+            "len(selected_dices) == 6 and [dice.color.name for dice in selected_dices].count('RED') == 2 and [dice.color.name for dice in selected_dices].count('GREEN') == 2 and [dice.color.name for dice in selected_dices].count('BLUE') == 2"
         ],
-        "texture_conditions": "",
+        "texture_conditions": 
+        [
+            "0"
+        ],
         "points": [3, 5],
         "effet_special": "Jouer immédiatement un autre tour",
         "id_effet_special": 2
@@ -128,11 +167,14 @@
         "condition": "Somme des dés inférieure ou égale à 12",
         "code_condition": 
         [
-            "sum(dices) <= 12"
+            "sum([int(dice.number.value) for dice in selected_dices]) <= 12"
         ],
-        "texture_conditions": "",
+        "texture_conditions": 
+        [
+            "0"
+        ],
         "points": [2, 4],
-        "effet_special": "Permet de prendre aussi la carte d’habitant à droite",
+        "effet_special": "Permet de prendre aussi la carte d'habitant à droite",
         "id_effet_special": 3
     },
     {
@@ -143,11 +185,16 @@
         "condition": "Combinaison de couleurs spécifiques (ex: 2 verts, 2 bleus)",
         "code_condition": 
         [
-            "dices.count(1) == 2 and dices.count(2) == 2",
-            "dices.count(3) == 2 and dices.count(4) == 2",
-            "dices.count(5) == 2 and dices.count(6) == 2"
+            "len(selected_dices) >= 4 and [dice.color.name for dice in selected_dices].count('RED') == 2 and [dice.color.name for dice in selected_dices].count('GREEN') == 2",
+            "len(selected_dices) >= 4 and [dice.color.name for dice in selected_dices].count('GREEN') == 2 and [dice.color.name for dice in selected_dices].count('BLUE') == 2",
+            "len(selected_dices) >= 4 and [dice.color.name for dice in selected_dices].count('RED') == 2 and [dice.color.name for dice in selected_dices].count('BLUE') == 2"
         ],
-        "texture_conditions": "",
+        "texture_conditions": 
+        [
+            "0",
+            "0",
+            "0"
+        ],
         "points": [1, 2, 3, 4],
         "effet_special": "Les points augmentent de manière exponentielle en fonction du nombre de Fées zélées que vous possédez.",
         "id_effet_special": 4
@@ -160,12 +207,14 @@
         "condition": "Somme des dés supérieure ou égale à une certaine valeur (par exemple, 30)",
         "code_condition": 
         [
-            "sum(dices) >= 30"
+            "sum([int(dice.number.value) for dice in selected_dices]) >= 30"
         ],
-        "texture_conditions": "",
+        "texture_conditions": 
+        [
+            "0"
+        ],
         "points": [-4],
         "effet_special": "Fait perdre des points en fin de partie",
         "id_effet_special": 5
     }
-
 ]

@@ -12,3 +12,6 @@ class Card:
     effet_special: str
     id_effet_special: int
     card_type: str = "habitant"
+    
+    def __repr__(self):
+        return f"{self.card_type} | {self.nom} | {self.lieu} | {self.points}"
